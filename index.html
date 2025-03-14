@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Semillas de Cannabis</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #catalogo, #carrito { margin: 20px; }
+        .producto { border: 1px solid #ccc; padding: 10px; margin: 10px; display: inline-block; }
+        button { background-color: green; color: white; border: none; padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ACID</h1>
+    </header>
+    
+    <section id="catalogo">
+        <div class="producto" data-id="1" data-nombre="Semilla A" data-precio="10000">
+            <h3>Semilla A</h3>
+            <p>Precio: $10,000</p>
+            <button onclick="agregarAlCarrito(this)">Agregar</button>
+        </div>
+        <div class="producto" data-id="2" data-nombre="Semilla B" data-precio="15000">
+            <h3>Semilla B</h3>
+            <p>Precio: $15,000</p>
+            <button onclick="agregarAlCarrito(this)">Agregar</button>
+        </div>
+    </section>
+    
+    <section id="carrito">
+        <h2>Carrito de Compras</h2>
+        <ul id="lista-carrito"></ul>
+        <p id="total">Total: $0</p>
+        <button id="btnPagar">Pagar con MercadoPago</button>
+    </section>
+
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script>
+        let carrito = [];
+        function agregarAlCarrito(elemento) {
+            let producto = elemento.parentElement;
+            let id = producto.getAttribute("data-id");
+            let nombre = producto.getAttribute("data-nombre");
+            let precio = parseFloat(producto.getAttribute("data-precio"));
+            carrito.push({ id, nombre, precio });
+            actualizarCarrito();
+        }
+
+        function actualizarCarrito() {
+            let lista = document.getElementById("lista-carrito");
+            lista.innerHTML = "";
+            let total = 0;
+            carrito.forEach(item => {
+                let li = document.createElement("li");
+                li.textContent = `${item.nombre} - $${item.precio}`;
+                lista.appendChild(li);
+                total += item.precio;
+            });
+            document.getElementById("total").textContent = `Total: $${total}`;
+        }
+
+        document.getElementById("btnPagar").addEventListener("click", () => {
+            const mp = new MercadoPago("TU_PUBLIC_KEY", { locale: "es-CO" });
+            fetch("https://tu-servidor.com/crear_preferencia", {
+                method: "POST",
+                body: JSON.stringify({ items: carrito }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(preference => {
+                mp.checkout({ preference: { id: preference.id } });
+            });
+        });
+    </script>
+
+    <footer>
+        <p>&copy; 2025 - Catálogo de Semillas</p>
+    </footer>
+</body>
+</html>
